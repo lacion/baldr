@@ -1,0 +1,6 @@
+package: github.com/Kyperion/baldr
+import:
+- package: github.com/spf13/cobra
+  subpackages:
+  - cobra
+- package: gopkg.in/mgo.v2
