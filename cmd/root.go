@@ -22,6 +22,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var wait int
+var retry int
 var cfgFile string
 
 // RootCmd represents the base command when called without any subcommands
@@ -55,10 +57,10 @@ func init() {
 	// Cobra supports Persistent Flags, which, if defined here,
 	// will be global for your application.
 
+	RootCmd.PersistentFlags().IntVarP(&wait, "timeout", "t", 5000, "Timeout in ms to wait before retrys.")
+	RootCmd.PersistentFlags().IntVarP(&retry, "retry", "r", 5, "number of times to retry before bailing out.")
+
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.baldr.yaml)")
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 // initConfig reads in config file and ENV variables if set.

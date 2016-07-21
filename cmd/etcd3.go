@@ -15,38 +15,51 @@
 package cmd
 
 import (
-	"fmt"
+	"log"
+	"strings"
+	"time"
 
+	"github.com/Kyperion/baldr/try"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/spf13/cobra"
 )
+
+var endpoints string
 
 // etcd3Cmd represents the etcd3 command
 var etcd3Cmd = &cobra.Command{
 	Use:   "etcd3",
-	Short: "A brief description of your command etcd3",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "waits untill an etcd3 is ready to accept connections",
+	Long: `this command will try to connect to a etcd3 instance and retry a few times untill it succeeds or bails out. For example:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+baldr etcd3 -e etcd1:2379,etcd2:2379,etcd3:2379`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
-		fmt.Println("etcd3 called")
+
+		endpointsArray := strings.Split(endpoints, ",")
+
+		log.Println("Connecting to", endpoints)
+
+		err := try.Do(func(attempt int) (bool, error) {
+			var err error
+			cli, err := clientv3.New(clientv3.Config{
+				Endpoints:   endpointsArray,
+				DialTimeout: 5 * time.Second,
+			})
+			if err == nil {
+				cli.Close()
+			}
+			return attempt < retry, err
+		}, wait)
+
+		if err != nil {
+			log.Fatalln("error:", err)
+		}
+
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(etcd3Cmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// etcd3Cmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// etcd3Cmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
+	etcd3Cmd.Flags().StringVarP(&mongoDB, "endpoints", "e", "", "etcd3 instances to connect to")
 }
