@@ -33,6 +33,12 @@ var etcd3Cmd = &cobra.Command{
 	Long: `this command will try to connect to a etcd3 instance and retry a few times untill it succeeds or bails out. For example:
 
 baldr etcd3 -e etcd1:2379,etcd2:2379,etcd3:2379`,
+
+	PreRun: func(cmd *cobra.Command, args []string) {
+		if endpoints == "" {
+			log.Fatalln("etcd3 connection string is empty.")
+		}
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 
 		endpointsArray := strings.Split(endpoints, ",")
