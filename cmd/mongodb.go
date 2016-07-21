@@ -24,9 +24,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var MongoDB string
-var Timeout int
-var Retry int
+var mongoDB string
+var wait int
+var retry int
 
 // mongodbCmd represents the mongodb command
 var mongodbCmd = &cobra.Command{
@@ -35,12 +35,21 @@ var mongodbCmd = &cobra.Command{
 	Long: `this command will try to connect to a mongodb instance and retry a few times untill it succeeds or bails out. For example:
 
 baldr mongodb -m mongodb://user:pass@db1:10013,db2:10014/auth?ssl=true`,
+
 	Run: func(cmd *cobra.Command, args []string) {
+
+		log.Println("Connecting to ", mongoDB)
+
 		err := try.Do(func(attempt int) (bool, error) {
 			var err error
-			_, err = mgo.Dial(MongoDB)
-			return attempt < 5, err // try 5 times
-		})
+			session, err := mgo.Dial(mongoDB)
+
+			if err == nil {
+				session.Close()
+			}
+			return attempt < retry, err
+		}, wait)
+
 		if err != nil {
 			log.Fatalln("error:", err)
 			os.Exit(1)
@@ -50,7 +59,7 @@ baldr mongodb -m mongodb://user:pass@db1:10013,db2:10014/auth?ssl=true`,
 
 func init() {
 	RootCmd.AddCommand(mongodbCmd)
-	mongodbCmd.Flags().StringVarP(&MongoDB, "mongodb", "m", os.Getenv("MONGODB"), "mongo instances to connect to.")
-	mongodbCmd.Flags().IntVarP(&Timeout, "timeout", "t", 5000, "Timeout in ms to wait before retrys.")
-	mongodbCmd.Flags().IntVarP(&Retry, "retry", "r", 5, "number of times to retry before bailing out.")
+	mongodbCmd.Flags().StringVarP(&mongoDB, "mongodb", "m", os.Getenv("MONGODB"), "mongo instances to connect to.")
+	mongodbCmd.Flags().IntVarP(&wait, "timeout", "t", 5000, "Timeout in ms to wait before retrys.")
+	mongodbCmd.Flags().IntVarP(&retry, "retry", "r", 5, "number of times to retry before bailing out.")
 }

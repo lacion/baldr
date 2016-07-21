@@ -16,7 +16,7 @@ type Func func(attempt int) (retry bool, err error)
 
 // Do keeps trying the function until the second argument
 // returns false, or no error is returned.
-func Do(fn Func) error {
+func Do(fn Func, Wait int) error {
 	var err error
 	var cont bool
 	attempt := 1
@@ -29,8 +29,8 @@ func Do(fn Func) error {
 		if attempt > MaxRetries {
 			return errMaxRetriesReached
 		}
-		time.Sleep(5000 * time.Millisecond)
-		log.Println("retrying.....")
+		time.Sleep(time.Duration(Wait) * time.Millisecond)
+		log.Println("Retry #", attempt, " waiting ", Wait, "ms")
 	}
 	return err
 }
