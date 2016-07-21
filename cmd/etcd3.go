@@ -41,14 +41,12 @@ baldr etcd3 -e etcd1:2379,etcd2:2379,etcd3:2379`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
-		endpointsArray := strings.Split(endpoints, ",")
-
 		log.Println("Connecting to", endpoints)
 
 		err := try.Do(func(attempt int) (bool, error) {
 			var err error
 			cli, err := clientv3.New(clientv3.Config{
-				Endpoints:   endpointsArray,
+				Endpoints:   strings.Split(endpoints, ","),
 				DialTimeout: 5 * time.Second,
 			})
 			if err == nil {
