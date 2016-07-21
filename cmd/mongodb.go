@@ -36,6 +36,11 @@ var mongodbCmd = &cobra.Command{
 
 baldr mongodb -m mongodb://user:pass@db1:10013,db2:10014/auth?ssl=true`,
 
+	PreRun: func(cmd *cobra.Command, args []string) {
+		if mongoDB == "" {
+			log.Fatalln("mongodb connection string is empty.")
+		}
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 
 		log.Println("Connecting to ", mongoDB)
@@ -52,7 +57,7 @@ baldr mongodb -m mongodb://user:pass@db1:10013,db2:10014/auth?ssl=true`,
 
 		if err != nil {
 			log.Fatalln("error:", err)
-			os.Exit(1)
+			//os.Exit(1)
 		}
 	},
 }
