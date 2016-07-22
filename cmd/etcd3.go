@@ -51,6 +51,7 @@ baldr etcd3 -e etcd1:2379,etcd2:2379,etcd3:2379`,
 			})
 			if err == nil {
 				cli.Close()
+				log.Println("connected to etcd3")
 			}
 			return attempt < retry, err
 		}, wait)

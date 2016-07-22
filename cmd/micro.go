@@ -15,13 +15,17 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 
+	"github.com/Kyperion/baldr/try"
+	"github.com/micro/go-micro/registry"
+	"github.com/micro/go-plugins/registry/etcdv3"
 	"github.com/spf13/cobra"
 )
 
 var microService string
+var microRegistry string
+var endpoint string
 
 // microCmd represents the micro command
 var microCmd = &cobra.Command{
@@ -36,12 +40,29 @@ baldr micro -s foo.bar`,
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
-		fmt.Println("micro called")
+
+		log.Println("Waitin for", microService)
+
+		err := try.Do(func(attempt int) (bool, error) {
+			var err error
+			r := etcdv3.NewRegistry(registry.Addrs(endpoint))
+			_, err = r.GetService(microService)
+			if err == nil {
+				log.Println("Found service", microService)
+			}
+			return attempt < retry, err
+		}, wait)
+		if err != nil {
+			log.Fatalln("error:", err)
+		}
+
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(microCmd)
 	microCmd.Flags().StringVarP(&microService, "servicename", "s", "", "Micro service name to watch for.")
+	// ToDo: implement other registries apart from etcd3
+	microCmd.Flags().StringVarP(&microService, "registryname", "n", "", "Micro registry to look in.")
+	microCmd.Flags().StringVarP(&endpoint, "registryendpoint", "g", "", "etcd3 instance to connect to")
 }
