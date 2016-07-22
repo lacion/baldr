@@ -1,0 +1,20 @@
+FROM kyperion/docker-alpine:buildimage
+
+LABEL app="build-micro"
+LABEL REPO="https://github.com/Kyperion/baldr"
+
+ENV GOROOT=/usr/lib/go \
+    GOPATH=/gopath \
+    GOBIN=/gopath/bin \
+    PROJPATH=/gopath/src/github.com/Kyperion/baldr
+
+# Because of https://github.com/docker/docker/issues/14914
+ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+
+RUN mkdir -p /gopath/bin && \
+  go get github.com/Kyperion/baldr && \
+  mkdir $PROJPATH/bin && \
+  cd $PROJPATH && go build -o bin/baldr --ldflags '-w -linkmode external -extldflags "-static"' main.go && \
+  mv /gopath/src/github.com/Kyperion/baldr/bin/* /gopath/bin/ && \
+  rm -rf /gopath/pkg && \
+  rm -rf /gopath/src
