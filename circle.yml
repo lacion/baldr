@@ -19,6 +19,7 @@ test:
 deployment:
   release:
     tag: /v[0-9]+(\.[0-9]+)*/
+    owner: circleci
     commands:
-      - go get github.com/tcnksm/ghr
-      - ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $(git describe --tags) baldr
+        - go get github.com/tcnksm/ghr
+        - ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $(git describe --tags) baldr
