@@ -18,7 +18,7 @@ test:
 
 deployment:
   release:
-    tag: /v\d+(\.\d+)+/
+    tag: /d+(\.\d+)+/
     commands:
       - go get github.com/tcnksm/ghr
       - ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $(git describe --tags) baldr
