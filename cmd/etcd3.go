@@ -20,8 +20,11 @@ import (
 	"time"
 
 	"github.com/Kyperion/baldr/try"
+
 	"github.com/coreos/etcd/clientv3"
 	"github.com/spf13/cobra"
+
+	"golang.org/x/net/context"
 )
 
 var endpoints string
@@ -47,8 +50,18 @@ baldr etcd3 -e etcd1:2379,etcd2:2379,etcd3:2379`,
 			var err error
 			cli, err := clientv3.New(clientv3.Config{
 				Endpoints:   strings.Split(endpoints, ","),
-				DialTimeout: 5 * time.Second,
+				DialTimeout: 15 * time.Second,
 			})
+
+			if err != nil {
+				log.Println("error connecting:", err)
+				return attempt < retry, err
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			_, err = cli.Put(ctx, "baldr", "check")
+			cancel()
+
 			if err == nil {
 				cli.Close()
 				log.Println("connected to etcd3")
