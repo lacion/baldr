@@ -1,5 +1,8 @@
 #History
 
+##0.1.2 (2016-08-06)
+* added elasticsearch command
+
 ##0.1.0 (2016-07-23)
 * started using sem ver.
 * build and release from tagged sem ver.

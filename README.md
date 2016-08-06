@@ -31,3 +31,13 @@ the micro command will look in the go-micro registry to a micro service if its n
 you can also specify a wait time in ms before retries with -t and the number of times you want it to retry before bailing out.
 
 		 baldr micro -s foo.service -g etcd3:2379 -t 5000 -r 10
+
+#### Elasticsearch
+
+the elasticsearch command will wait for a elasticsearch instance to ready to accept connections before continuing or it will fails after some time.
+
+		baldr elasticsearch -s http://localhost:9200
+
+you can also specify a wait time in ms before retries with -t and the number of times you want it to retry before bailing out.
+
+		 baldr elasticsearch -s http://localhost:9200 -t 5000 -r 10
