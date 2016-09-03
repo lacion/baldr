@@ -15,7 +15,9 @@
 package cmd
 
 import (
+	"crypto/tls"
 	"log"
+	"net"
 
 	"gopkg.in/mgo.v2"
 
@@ -40,14 +42,29 @@ baldr mongodb -m mongodb://user:pass@db1:10013,db2:10014/auth?ssl=true`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
+		tlsConfig := &tls.Config{}
+		tlsConfig.InsecureSkipVerify = true
+
 		log.Println("Connecting to ", mongoDB)
 
 		err := try.Do(func(attempt int) (bool, error) {
 			var err error
-			session, err := mgo.Dial(mongoDB)
+			dialInfo, err := mgo.ParseURL(mongoDB)
+			if err != nil {
+				log.Println("Connection error: ", err.Error())
+				return attempt < retry, err
+			}
+			dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
+				conn, err := tls.Dial("tcp", addr.String(), tlsConfig)
+				return conn, err
+			}
+			session, err := mgo.DialWithInfo(dialInfo)
 			if err == nil {
 				session.Close()
+			} else {
+				log.Println("Connection error: ", err.Error())
 			}
+
 			return attempt < retry, err
 		}, wait)
 
