@@ -1,6 +1,13 @@
 machine:
+  environment:
+    GODIST: "go1.7.linux-amd64.tar.gz"
   pre:
     - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
+  post:
+    - mkdir -p download
+    - test -e download/$GODIST || curl -o download/$GODIST https://storage.googleapis.com/golang/$GODIST
+    - sudo rm -rf /usr/local/go
+    - sudo tar -C /usr/local -xzf download/$GODIST
   services:
     - docker
 
@@ -26,5 +33,5 @@ deployment:
   release:
     tag: /v[0-9]+(\.[0-9]+)*/
     commands:
-        - go get github.com/tcnksm/ghr
+        - go get -u github.com/tcnksm/ghr
         - ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $(git describe --tags) baldr
