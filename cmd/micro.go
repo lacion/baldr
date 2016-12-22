@@ -50,7 +50,6 @@ baldr micro -s foo.bar`,
 			client, err := api.NewClient(config)
 
 			_, _, err = client.Health().Service(microService, "", false, nil)
-			client.Agent().Re
 
 			if err == nil {
 				log.Println("Found service", microService)
