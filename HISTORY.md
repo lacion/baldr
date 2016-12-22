@@ -1,5 +1,8 @@
 #History
 
+##0.1.3 (2016-08-06)
+* added consul command
+
 ##0.1.2 (2016-08-06)
 * added elasticsearch command
 
