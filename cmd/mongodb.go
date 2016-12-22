@@ -70,6 +70,8 @@ baldr mongodb -m mongodb://user:pass@db1:10013,db2:10014/auth?ssl=true`,
 
 		if err != nil {
 			log.Fatalln("error:", err)
+		} else {
+			log.Println("Connected to mongo successful")
 		}
 	},
 }

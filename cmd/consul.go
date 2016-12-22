@@ -22,40 +22,48 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var microService string
-var microRegistry string
-var endpoint string
+var consul string
 
-// microCmd represents the micro command
-var microCmd = &cobra.Command{
-	Use:   "micro",
-	Short: "waits untill a micro service is registered",
-	Long: `this command will check micro registry and look for a spesific micro service. For example:
+// consulCmd represents the consul command
+var consulCmd = &cobra.Command{
+	Use:   "consul",
+	Short: "waits untill an consul is ready to accept connections",
+	Long: `this command will try to connect to a consul instance and retry a few times untill it succeeds or bails out. For example:
 
-baldr micro -s foo.bar`,
+baldr consul -e consul:8500`,
+
 	PreRun: func(cmd *cobra.Command, args []string) {
-		if microService == "" {
-			log.Fatalln("Micro service name is empty.")
+		if consul == "" {
+			log.Fatalln("consul connection string is empty.")
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
-		log.Println("Waitin for", microService)
+		log.Println("Connecting to", consul)
 
 		err := try.Do(func(attempt int) (bool, error) {
 			var err error
+
 			config := api.DefaultConfig()
-			config.Address = endpoint
+			config.Address = consul
 
 			client, err := api.NewClient(config)
 
-			_, _, err = client.Health().Service(microService, "", true, nil)
+			kv := client.KV()
+			p := &api.KVPair{Key: "foo", Value: []byte("test")}
+			_, err = kv.Put(p, nil)
+
+			if err != nil {
+				log.Println("error connecting:", err)
+				return attempt < retry, err
+			}
 
 			if err == nil {
-				log.Println("Found service", microService)
+				log.Println("connected to consul")
 			}
 			return attempt < retry, err
 		}, wait)
+
 		if err != nil {
 			log.Fatalln("error:", err)
 		}
@@ -64,9 +72,7 @@ baldr micro -s foo.bar`,
 }
 
 func init() {
-	RootCmd.AddCommand(microCmd)
-	microCmd.Flags().StringVarP(&microService, "servicename", "s", "", "Micro service name to watch for.")
-	// ToDo: implement other registries apart from etcd3
-	microCmd.Flags().StringVarP(&microService, "registryname", "n", "", "Micro registry to look in.")
-	microCmd.Flags().StringVarP(&endpoint, "registryendpoint", "g", "", "etcd3 instance to connect to")
+	RootCmd.AddCommand(consulCmd)
+
+	consulCmd.Flags().StringVarP(&consul, "consul", "c", "", "consul instance to connect to")
 }
